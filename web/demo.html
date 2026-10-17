@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>更新检查 · 演示</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; min-height:100vh; display:grid; place-items:center;
+         background:#0d1117; color:#e6edf3; font:15px/1.7 system-ui,"Segoe UI","Microsoft YaHei",sans-serif; }
+  main { width:min(680px,92vw); }
+  h1 { font-size:18px; margin:0 0 6px; }
+  p  { color:#8b949e; margin:0 0 22px; }
+  button { padding:9px 18px; border-radius:9px; border:1px solid #30363d; background:#21262d;
+           color:#e6edf3; cursor:pointer; font-size:14px; }
+  button:hover { border-color:#8b949e; }
+  pre { background:#161b22; border:1px solid #30363d; border-radius:10px; padding:14px;
+        overflow:auto; font-size:12.5px; color:#c9d1d9; max-height:45vh; }
+  .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+  .hint { color:#6e7681; font-size:12.5px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>不用服务器的更新检查</h1>
+  <p>这一页只做两件事：加载时静默查一次；点按钮强制查一次。右上角的小标签只有「有新版本」时才出现。</p>
+  <div class="row">
+    <button id="btn">检查更新（强制）</button>
+    <span class="hint" id="hint">同一个版本只弹一次——把 localStorage 里的记录清掉就会再弹。</span>
+  </div>
+  <pre id="out">（等待第一次检查…）</pre>
+</main>
+
+<script src="/update-check.js"></script>
+<script>
+  var api = installUpdateCheck({
+    endpoint: '/api/update/check',
+    openUrlEndpoint: '/api/open_url',
+    storageKey: 'demo_seen_ver',
+    onLatest: function (r) { document.getElementById('hint').textContent = '已是最新 v' + r.current; },
+    onError: function (msg) { document.getElementById('hint').textContent = '检查失败：' + msg; }
+  });
+
+  function dump(r) {
+    document.getElementById('out').textContent = r ? JSON.stringify(r, null, 2) : '（无结果）';
+  }
+
+  document.getElementById('btn').onclick = function () {
+    this.disabled = true;
+    var self = this;
+    api.check(true).then(function (r) { dump(r); self.disabled = false; });
+  };
+
+  // 页面加载那一刻的静默结果也打出来，方便对照
+  var t = setInterval(function () {
+    fetch('/api/update/check').then(function (x) { return x.json(); }).then(function (r) {
+      dump(r); clearInterval(t);
+    }).catch(function () { clearInterval(t); });
+  }, 800);
+</script>
+</body>
+</html>

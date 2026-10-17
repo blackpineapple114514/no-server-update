@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "no-server-update"
+version = "0.1.0"
+description = "给桌面程序加「检查更新」，但不需要服务器：多源探测（静态 JSON / Releases / 网盘目录）+ 失败语义 + 前端提示"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+keywords = ["update-check", "auto-update", "desktop", "no-server", "lanzou"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/blackpineapple114514/no-server-update"
+
+[project.scripts]
+nou = "nou.cli:main"
+
+[tool.setuptools]
+packages = ["nou", "nou.sources"]
